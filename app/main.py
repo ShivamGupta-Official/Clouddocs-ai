@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.api.health import router as health_router
+from app.api.documents import router as documents_router
 
 # Configure logging
 logging.basicConfig(
@@ -97,7 +98,7 @@ def create_app() -> FastAPI:
 
     # --- Register Routers ---
     app.include_router(health_router)
-    # Future: document and chat routers will be added in Phase 2 and 4
+    app.include_router(documents_router)
 
     return app
 
