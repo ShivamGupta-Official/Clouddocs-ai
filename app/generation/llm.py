@@ -109,8 +109,9 @@ class GeminiProvider(BaseLLMProvider):
                 return "The model did not return any text output."
             return response.text.strip()
         except Exception as e:
-            logger.error("Gemini API call failed: %s", e)
-            raise RuntimeError(f"Google Gemini generation failed: {e}") from e
+            err_str = str(e).replace(self.api_key, "[REDACTED]")
+            logger.error("Gemini API call failed: %s", err_str)
+            raise RuntimeError(f"Google Gemini generation failed: {err_str}") from e
 
 
 class OpenAIProvider(BaseLLMProvider):
@@ -150,8 +151,9 @@ class OpenAIProvider(BaseLLMProvider):
             content = choice.message.content or ""
             return content.strip()
         except Exception as e:
-            logger.error("OpenAI API call failed: %s", e)
-            raise RuntimeError(f"OpenAI generation failed: {e}") from e
+            err_str = str(e).replace(self.api_key, "[REDACTED]")
+            logger.error("OpenAI API call failed: %s", err_str)
+            raise RuntimeError(f"OpenAI generation failed: {err_str}") from e
 
 
 class OllamaProvider(BaseLLMProvider):
