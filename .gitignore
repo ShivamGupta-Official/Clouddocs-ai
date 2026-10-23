@@ -1,0 +1,42 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment variables (secrets)
+.env
+
+# Application data (databases, uploads, model cache)
+data/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
