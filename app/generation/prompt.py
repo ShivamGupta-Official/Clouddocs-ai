@@ -9,7 +9,6 @@ Constructs grounded, truthful prompts for LLM generation:
 - Structured citation labeling ([Source N | Document: X | Page: Y])
 """
 
-from typing import List
 from app.retrieval.retriever import RetrievedChunk
 
 SYSTEM_INSTRUCTION = """You are CloudDocs AI, an expert, truthful document question-answering assistant.
@@ -26,7 +25,7 @@ CRITICAL RULES:
 """
 
 
-def build_grounded_prompt(question: str, passages: List[RetrievedChunk]) -> str:
+def build_grounded_prompt(question: str, passages: list[RetrievedChunk]) -> str:
     """
     Construct a complete prompt combining system instructions, retrieved passages,
     and user question.
@@ -43,7 +42,9 @@ def build_grounded_prompt(question: str, passages: List[RetrievedChunk]) -> str:
     # Format source passages with clear attribution headers
     context_blocks = []
     for idx, passage in enumerate(passages, start=1):
-        header = f"--- [Source {idx} | Document: {passage.filename} | Page: {passage.page_number}] ---"
+        header = (
+            f"--- [Source {idx} | Document: {passage.filename} | Page: {passage.page_number}] ---"
+        )
         context_blocks.append(f"{header}\n{passage.text}")
 
     context_str = "\n\n".join(context_blocks)

@@ -10,10 +10,11 @@ Verifies:
 """
 
 import pytest
+
 from app.ingestion.file_validation import (
-    validate_file,
-    sanitize_filename,
     FileValidationError,
+    sanitize_filename,
+    validate_file,
 )
 
 
@@ -67,7 +68,7 @@ def test_validate_invalid_pdf_missing_header():
 
 def test_validate_valid_text():
     """Valid UTF-8 text should pass."""
-    txt_content = "Hello, world! This is a test document.".encode("utf-8")
+    txt_content = b"Hello, world! This is a test document."
     name, ext, sha = validate_file("notes.txt", txt_content, max_size_bytes=5000)
     assert name == "notes.txt"
     assert ext == ".txt"

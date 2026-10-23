@@ -12,7 +12,6 @@ Ensures that API keys and secrets are never hardcoded or leaked into error logs.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import httpx
 
@@ -47,7 +46,7 @@ class BaseLLMProvider(ABC):
 
     @property
     @abstractmethod
-    def model_name(self) -> Optional[str]:
+    def model_name(self) -> str | None:
         pass
 
 
@@ -62,7 +61,7 @@ class NoLLMProvider(BaseLLMProvider):
         return "none"
 
     @property
-    def model_name(self) -> Optional[str]:
+    def model_name(self) -> str | None:
         return None
 
     def generate(self, prompt: str) -> str:
@@ -87,6 +86,7 @@ class GeminiProvider(BaseLLMProvider):
 
         try:
             from google import genai
+
             self.client = genai.Client(api_key=self.api_key)
         except Exception as e:
             raise RuntimeError(f"Failed to initialize Google GenAI client: {e}") from e
@@ -124,6 +124,7 @@ class OpenAIProvider(BaseLLMProvider):
 
         try:
             from openai import OpenAI
+
             self.client = OpenAI(api_key=self.api_key)
         except Exception as e:
             raise RuntimeError(f"Failed to initialize OpenAI client: {e}") from e
@@ -181,9 +182,7 @@ class OllamaProvider(BaseLLMProvider):
             with httpx.Client(timeout=60.0) as client:
                 resp = client.post(url, json=payload)
                 if resp.status_code != 200:
-                    raise RuntimeError(
-                        f"Ollama returned HTTP {resp.status_code}: {resp.text}"
-                    )
+                    raise RuntimeError(f"Ollama returned HTTP {resp.status_code}: {resp.text}")
                 data = resp.json()
                 return data.get("response", "").strip()
         except httpx.ConnectError as e:

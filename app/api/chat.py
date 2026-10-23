@@ -6,13 +6,12 @@ Provides:
 """
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.documents import get_vector_store, get_embedding_engine
-from app.config import get_settings, Settings
-from app.generation.llm import get_llm_provider, BaseLLMProvider
+from app.api.documents import get_embedding_engine, get_vector_store
+from app.config import Settings, get_settings
+from app.generation.llm import BaseLLMProvider, get_llm_provider
 from app.retrieval.embeddings import EmbeddingEngine
 from app.retrieval.retriever import DocumentRetriever
 from app.retrieval.vector_store import VectorStore
@@ -24,8 +23,8 @@ logger = logging.getLogger("clouddocs.api.chat")
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 # Singletons for retriever and rag_service
-_retriever: Optional[DocumentRetriever] = None
-_rag_service: Optional[RAGService] = None
+_retriever: DocumentRetriever | None = None
+_rag_service: RAGService | None = None
 
 
 def get_retriever(
@@ -95,10 +94,10 @@ async def chat_endpoint(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
     except Exception as e:
         logger.error("Chat question answering failed: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while answering the question: {e}",
-        )
+        ) from e

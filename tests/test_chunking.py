@@ -11,7 +11,8 @@ Verifies:
 """
 
 import pytest
-from app.ingestion.chunker import chunk_text, TextChunk
+
+from app.ingestion.chunker import chunk_text
 
 
 def test_chunk_invalid_parameters():
@@ -69,7 +70,9 @@ def test_chunk_sliding_window_overlap():
 
     chunk_size = 100
     chunk_overlap = 30
-    chunks = chunk_text(pages, "doc_large", "large.txt", chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    chunks = chunk_text(
+        pages, "doc_large", "large.txt", chunk_size=chunk_size, chunk_overlap=chunk_overlap
+    )
 
     assert len(chunks) > 1
     # Check each chunk is non-empty and has correct metadata

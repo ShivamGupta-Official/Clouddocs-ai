@@ -16,12 +16,13 @@ Guarantees:
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any
+from typing import Any
 
 
 @dataclass
 class TextChunk:
     """Represents an extracted and segmented piece of text with citation metadata."""
+
     chunk_id: str
     document_id: str
     filename: str
@@ -31,7 +32,7 @@ class TextChunk:
     start_char: int
     end_char: int
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "chunk_id": self.chunk_id,
             "document_id": self.document_id,
@@ -45,12 +46,12 @@ class TextChunk:
 
 
 def chunk_text(
-    pages: List[Dict[str, Any]],
+    pages: list[dict[str, Any]],
     document_id: str,
     filename: str,
     chunk_size: int = 800,
     chunk_overlap: int = 120,
-) -> List[TextChunk]:
+) -> list[TextChunk]:
     """
     Split pages of text into overlapping chunks.
 
@@ -80,7 +81,7 @@ def chunk_text(
         )
 
     step = chunk_size - chunk_overlap
-    chunks: List[TextChunk] = []
+    chunks: list[TextChunk] = []
     global_chunk_idx = 0
 
     for page_info in pages:

@@ -15,23 +15,21 @@ Orchestrates the complete document ingestion lifecycle:
 
 import logging
 import uuid
-from pathlib import Path
-from typing import List, Optional
 
 import aiofiles
 
 from app.config import Settings
 from app.database.metadata import MetadataDB
 from app.ingestion.chunker import chunk_text
-from app.ingestion.file_validation import validate_file, FileValidationError
-from app.ingestion.pdf_loader import load_pdf_content, PDFExtractionError
-from app.ingestion.text_loader import load_text_content, TextExtractionError
+from app.ingestion.file_validation import FileValidationError, validate_file
+from app.ingestion.pdf_loader import PDFExtractionError, load_pdf_content
+from app.ingestion.text_loader import TextExtractionError, load_text_content
 from app.retrieval.embeddings import EmbeddingEngine
 from app.retrieval.vector_store import VectorStore
 from app.schemas.documents import (
+    DeleteDocumentResponse,
     DocumentResponse,
     DocumentStatus,
-    DeleteDocumentResponse,
 )
 
 logger = logging.getLogger("clouddocs.document_service")
@@ -101,6 +99,7 @@ class DocumentService:
         )
 
         # Step 4: Persist raw file to upload directory
+        self.settings.upload_dir_path.mkdir(parents=True, exist_ok=True)
         saved_file_path = self.settings.upload_dir_path / f"{doc_id}_{clean_filename}"
         try:
             async with aiofiles.open(saved_file_path, "wb") as f:
@@ -175,15 +174,15 @@ class DocumentService:
         )
         return updated_doc or doc_record
 
-    def list_documents(self) -> List[DocumentResponse]:
+    def list_documents(self) -> list[DocumentResponse]:
         """List all tracked documents."""
         return self.metadata_db.list_documents()
 
-    def get_document(self, document_id: str) -> Optional[DocumentResponse]:
+    def get_document(self, document_id: str) -> DocumentResponse | None:
         """Get document details by ID."""
         return self.metadata_db.get_document(document_id)
 
-    def delete_document(self, document_id: str) -> Optional[DeleteDocumentResponse]:
+    def delete_document(self, document_id: str) -> DeleteDocumentResponse | None:
         """
         Delete a document and clean up all associated vectors and disk files.
         """

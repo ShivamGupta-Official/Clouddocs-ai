@@ -12,7 +12,7 @@ Performs semantic search across indexed document chunks:
 
 import logging
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
+from typing import Any
 
 from app.retrieval.embeddings import EmbeddingEngine
 from app.retrieval.vector_store import VectorStore
@@ -23,6 +23,7 @@ logger = logging.getLogger("clouddocs.retriever")
 @dataclass
 class RetrievedChunk:
     """Represents a passage retrieved from the vector store with attribution metadata."""
+
     chunk_id: str
     document_id: str
     filename: str
@@ -31,7 +32,7 @@ class RetrievedChunk:
     text: str
     score: float  # Cosine similarity score [0.0, 1.0]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "chunk_id": self.chunk_id,
             "document_id": self.document_id,
@@ -61,10 +62,10 @@ class DocumentRetriever:
     def retrieve(
         self,
         query: str,
-        top_k: Optional[int] = None,
-        threshold: Optional[float] = None,
-        filter_doc_id: Optional[str] = None,
-    ) -> List[RetrievedChunk]:
+        top_k: int | None = None,
+        threshold: float | None = None,
+        filter_doc_id: str | None = None,
+    ) -> list[RetrievedChunk]:
         """
         Retrieve relevant document passages for a user query.
 
@@ -105,7 +106,7 @@ class DocumentRetriever:
         )
 
         # 3. Transform and filter by relevance score
-        results: List[RetrievedChunk] = []
+        results: list[RetrievedChunk] = []
         for cand in candidates:
             # ChromaDB cosine distance: distance in [0, 2]
             # Convert to similarity: 1 - distance, clamped to [0.0, 1.0]

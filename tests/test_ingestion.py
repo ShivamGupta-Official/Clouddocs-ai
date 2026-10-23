@@ -10,8 +10,9 @@ Verifies:
 
 import pymupdf
 import pytest
-from app.ingestion.pdf_loader import load_pdf_content, PDFExtractionError
-from app.ingestion.text_loader import load_text_content, TextExtractionError
+
+from app.ingestion.pdf_loader import PDFExtractionError, load_pdf_content
+from app.ingestion.text_loader import TextExtractionError, load_text_content
 
 
 def _create_test_pdf(pages_text: list[str]) -> bytes:
@@ -27,10 +28,12 @@ def _create_test_pdf(pages_text: list[str]) -> bytes:
 
 def test_pdf_loader_valid():
     """Verify text is extracted page by page from valid PDF."""
-    pdf_bytes = _create_test_pdf([
-        "Page one content with important facts.",
-        "Page two content with secondary details.",
-    ])
+    pdf_bytes = _create_test_pdf(
+        [
+            "Page one content with important facts.",
+            "Page two content with secondary details.",
+        ]
+    )
 
     pages = load_pdf_content(pdf_bytes)
     assert len(pages) == 2
@@ -54,7 +57,7 @@ def test_pdf_loader_scanned_detection():
 
 def test_text_loader_valid():
     """Verify plain text extraction from UTF-8 bytes."""
-    raw_bytes = "Line 1: CloudDocs AI.\nLine 2: RAG architecture.".encode("utf-8")
+    raw_bytes = b"Line 1: CloudDocs AI.\nLine 2: RAG architecture."
     result = load_text_content(raw_bytes)
 
     assert len(result) == 1

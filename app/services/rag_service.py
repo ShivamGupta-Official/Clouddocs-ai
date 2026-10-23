@@ -13,7 +13,6 @@ Orchestrates the complete Retrieval-Augmented Generation workflow:
 
 import logging
 import time
-from typing import Optional
 
 from app.config import Settings
 from app.generation.llm import BaseLLMProvider
@@ -44,9 +43,9 @@ class RAGService:
     def answer_question(
         self,
         question: str,
-        top_k: Optional[int] = None,
-        threshold: Optional[float] = None,
-        filter_doc_id: Optional[str] = None,
+        top_k: int | None = None,
+        threshold: float | None = None,
+        filter_doc_id: str | None = None,
     ) -> ChatResponse:
         """
         Process user question and return grounded answer with source citations.

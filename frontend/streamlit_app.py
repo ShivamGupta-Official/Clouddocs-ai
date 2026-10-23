@@ -9,7 +9,7 @@ A professional, minimal, document-focused UI:
 """
 
 import os
-from datetime import datetime
+
 import streamlit as st
 from api_client import CloudDocsAPIClient
 
@@ -31,14 +31,14 @@ st.markdown(
         color: #1f2937;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    
+
     /* Header typography */
     h1, h2, h3 {
         color: #111827;
         font-weight: 600;
         letter-spacing: -0.02em;
     }
-    
+
     /* Metric cards */
     div[data-testid="stMetric"] {
         background-color: #ffffff;
@@ -47,7 +47,7 @@ st.markdown(
         padding: 16px;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
-    
+
     /* Citation box */
     .citation-box {
         background-color: #f8fafc;
@@ -58,7 +58,7 @@ st.markdown(
         border-radius: 4px;
         font-size: 0.9em;
     }
-    
+
     /* Status badges */
     .status-completed {
         background-color: #dcfce7;
@@ -106,9 +106,13 @@ with st.sidebar:
     st.caption("Retrieval-Augmented Generation")
 
     st.markdown("---")
-    
+
     page_options = ["Dashboard", "Documents", "AI Chat", "Settings & Status"]
-    current_idx = page_options.index(st.session_state.current_page) if st.session_state.current_page in page_options else 0
+    current_idx = (
+        page_options.index(st.session_state.current_page)
+        if st.session_state.current_page in page_options
+        else 0
+    )
     selected_page = st.radio("Navigation", page_options, index=current_idx)
     st.session_state.current_page = selected_page
 
@@ -170,7 +174,9 @@ if st.session_state.current_page == "Dashboard":
                     f"*{doc.get('chunk_count', 0)} chunks*",
                     unsafe_allow_html=True,
                 )
-                st.caption(f"ID: {doc.get('id')} • Size: {doc.get('file_size_bytes', 0) / 1024:.1f} KB")
+                st.caption(
+                    f"ID: {doc.get('id')} • Size: {doc.get('file_size_bytes', 0) / 1024:.1f} KB"
+                )
                 st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 
     with col_right:
@@ -200,20 +206,19 @@ elif st.session_state.current_page == "Documents":
             help="Maximum size: 50MB. Digital text required (scanned PDFs without OCR will be flagged).",
         )
 
-        if uploaded_file is not None:
-            if st.button("Upload and Index Document", type="primary"):
-                with st.spinner(f"Extracting and indexing '{uploaded_file.name}'..."):
-                    file_bytes = uploaded_file.read()
-                    result = client.upload_document(uploaded_file.name, file_bytes)
+        if uploaded_file is not None and st.button("Upload and Index Document", type="primary"):
+            with st.spinner(f"Extracting and indexing '{uploaded_file.name}'..."):
+                file_bytes = uploaded_file.read()
+                result = client.upload_document(uploaded_file.name, file_bytes)
 
-                    if result["success"]:
-                        doc_data = result["data"]
-                        st.success(
-                            f"✅ Successfully indexed '{doc_data.get('filename')}' with {doc_data.get('chunk_count')} chunks!"
-                        )
-                        st.rerun()
-                    else:
-                        st.error(f"❌ Ingestion failed: {result.get('error')}")
+                if result["success"]:
+                    doc_data = result["data"]
+                    st.success(
+                        f"✅ Successfully indexed '{doc_data.get('filename')}' with {doc_data.get('chunk_count')} chunks!"
+                    )
+                    st.rerun()
+                else:
+                    st.error(f"❌ Ingestion failed: {result.get('error')}")
 
     st.markdown("---")
 
@@ -267,7 +272,9 @@ elif st.session_state.current_page == "AI Chat":
         with col1:
             top_k = st.slider("Max Passages (Top-K)", min_value=1, max_value=10, value=4)
         with col2:
-            threshold = st.slider("Relevance Threshold", min_value=0.0, max_value=1.0, value=0.3, step=0.05)
+            threshold = st.slider(
+                "Relevance Threshold", min_value=0.0, max_value=1.0, value=0.3, step=0.05
+            )
 
     # Render conversation history
     for msg in st.session_state.messages:
@@ -281,16 +288,18 @@ elif st.session_state.current_page == "AI Chat":
                         st.markdown(
                             f"""
                             <div class="citation-box">
-                                <b>[Source {cite.get('citation_index')}] {cite.get('filename')}</b> — Page {cite.get('page_number')} 
-                                <i>(Relevance: {cite.get('relevance_score', 0):.2%})</i><br>
-                                <p style="margin-top: 6px; color: #374151;">"{cite.get('snippet')}"</p>
+                                <b>[Source {cite.get("citation_index")}] {cite.get("filename")}</b> — Page {cite.get("page_number")}
+                                <i>(Relevance: {cite.get("relevance_score", 0):.2%})</i><br>
+                                <p style="margin-top: 6px; color: #374151;">"{cite.get("snippet")}"</p>
                             </div>
                             """,
                             unsafe_allow_html=True,
                         )
 
             if msg.get("insufficient_evidence", False):
-                st.warning("⚠️ The uploaded documents do not contain sufficient evidence to answer this question.")
+                st.warning(
+                    "⚠️ The uploaded documents do not contain sufficient evidence to answer this question."
+                )
 
     # Chat input
     if prompt := st.chat_input("Ask a question about your documents..."):
@@ -300,62 +309,69 @@ elif st.session_state.current_page == "AI Chat":
             st.markdown(prompt)
 
         # Generate response via backend API
-        with st.chat_message("assistant"):
-            with st.spinner("Searching documents and formulating response..."):
-                response = client.ask_question(
-                    question=prompt,
-                    top_k=top_k,
-                    threshold=threshold,
-                )
+        with (
+            st.chat_message("assistant"),
+            st.spinner("Searching documents and formulating response..."),
+        ):
+            response = client.ask_question(
+                question=prompt,
+                top_k=top_k,
+                threshold=threshold,
+            )
 
-                if response["success"]:
-                    data = response["data"]
-                    answer = data.get("answer", "")
-                    citations = data.get("citations", [])
-                    has_evidence = data.get("has_sufficient_evidence", True)
-                    latency = data.get("latency_seconds", 0)
+            if response["success"]:
+                data = response["data"]
+                answer = data.get("answer", "")
+                citations = data.get("citations", [])
+                has_evidence = data.get("has_sufficient_evidence", True)
+                latency = data.get("latency_seconds", 0)
 
-                    st.markdown(answer)
+                st.markdown(answer)
 
-                    if citations:
-                        with st.expander("📚 Source Citations & Evidence", expanded=True):
-                            for cite in citations:
-                                st.markdown(
-                                    f"""
-                                    <div class="citation-box">
-                                        <b>[Source {cite.get('citation_index')}] {cite.get('filename')}</b> — Page {cite.get('page_number')} 
-                                        <i>(Relevance: {cite.get('relevance_score', 0):.2%})</i><br>
-                                        <p style="margin-top: 6px; color: #374151;">"{cite.get('snippet')}"</p>
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True,
-                                )
+                if citations:
+                    with st.expander("📚 Source Citations & Evidence", expanded=True):
+                        for cite in citations:
+                            st.markdown(
+                                f"""
+                                <div class="citation-box">
+                                    <b>[Source {cite.get("citation_index")}] {cite.get("filename")}</b> — Page {cite.get("page_number")}
+                                    <i>(Relevance: {cite.get("relevance_score", 0):.2%})</i><br>
+                                    <p style="margin-top: 6px; color: #374151;">"{cite.get("snippet")}"</p>
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
 
-                    if not has_evidence:
-                        st.warning("⚠️ Insufficient evidence in uploaded documents to verify this answer.")
+                if not has_evidence:
+                    st.warning(
+                        "⚠️ Insufficient evidence in uploaded documents to verify this answer."
+                    )
 
-                    st.caption(f"Provider: {data.get('llm_provider')} • Latency: {latency:.2f}s")
+                st.caption(f"Provider: {data.get('llm_provider')} • Latency: {latency:.2f}s")
 
-                    # Save to conversation state
-                    st.session_state.messages.append({
+                # Save to conversation state
+                st.session_state.messages.append(
+                    {
                         "role": "assistant",
                         "content": answer,
                         "citations": citations,
                         "insufficient_evidence": not has_evidence,
-                    })
-                else:
-                    error_msg = f"Failed to retrieve answer: {response.get('error')}"
-                    st.error(error_msg)
-                    st.session_state.messages.append({
+                    }
+                )
+            else:
+                error_msg = f"Failed to retrieve answer: {response.get('error')}"
+                st.error(error_msg)
+                st.session_state.messages.append(
+                    {
                         "role": "assistant",
                         "content": error_msg,
-                    })
+                    }
+                )
 
     # Clear chat button
-    if st.session_state.messages:
-        if st.button("Clear Conversation", type="secondary"):
-            st.session_state.messages = []
-            st.rerun()
+    if st.session_state.messages and st.button("Clear Conversation", type="secondary"):
+        st.session_state.messages = []
+        st.rerun()
 
 
 # ==============================================================================
@@ -391,7 +407,9 @@ elif st.session_state.current_page == "Settings & Status":
         col_c1, col_c2 = st.columns(2)
         with col_c1:
             st.write(f"**Embedding Model:** `{config.get('embedding_model')}`")
-            st.write(f"**Configured LLM:** `{config.get('llm_provider')} ({config.get('llm_model')})`")
+            st.write(
+                f"**Configured LLM:** `{config.get('llm_provider')} ({config.get('llm_model')})`"
+            )
             st.write(f"**Max Upload Size:** `{config.get('max_upload_size_mb')} MB`")
         with col_c2:
             st.write(f"**Chunk Size:** `{config.get('chunk_size')} characters`")

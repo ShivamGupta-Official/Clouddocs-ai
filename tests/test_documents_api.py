@@ -7,8 +7,8 @@ Integration tests for document ingestion and management API endpoints:
 """
 
 import io
+
 import pymupdf
-import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app

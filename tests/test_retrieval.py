@@ -12,6 +12,7 @@ Verifies:
 """
 
 import pytest
+
 from app.config import get_settings
 from app.ingestion.chunker import TextChunk
 from app.retrieval.embeddings import EmbeddingEngine
@@ -127,7 +128,9 @@ def test_retriever_threshold_filtering(retriever, vector_store, embedding_engine
     assert len(results) == 0
 
     # With very low threshold, it returns the candidate
-    low_thresh_results = retriever.retrieve("What is quantum computing error mitigation?", threshold=0.0)
+    low_thresh_results = retriever.retrieve(
+        "What is quantum computing error mitigation?", threshold=0.0
+    )
     assert len(low_thresh_results) == 1
 
 

@@ -6,11 +6,11 @@ processing status, chunk counts, and SHA-256 hashes for deduplication.
 """
 
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import Any
 
-from app.schemas.documents import DocumentStatus, DocumentResponse
+from app.schemas.documents import DocumentResponse, DocumentStatus
 
 
 class MetadataDB:
@@ -59,7 +59,7 @@ class MetadataDB:
         status: DocumentStatus = DocumentStatus.PENDING,
     ) -> DocumentResponse:
         """Insert a new document record into SQLite."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         with self._get_connection() as conn:
             conn.execute(
                 """
@@ -85,7 +85,7 @@ class MetadataDB:
 
         return self.get_document(doc_id)  # type: ignore
 
-    def get_document(self, doc_id: str) -> Optional[DocumentResponse]:
+    def get_document(self, doc_id: str) -> DocumentResponse | None:
         """Fetch a document by its ID."""
         with self._get_connection() as conn:
             cursor = conn.execute("SELECT * FROM documents WHERE id = ?", (doc_id,))
@@ -94,7 +94,7 @@ class MetadataDB:
                 return None
             return self._row_to_response(row)
 
-    def get_document_by_hash(self, content_hash: str) -> Optional[DocumentResponse]:
+    def get_document_by_hash(self, content_hash: str) -> DocumentResponse | None:
         """Check for existing duplicate document by SHA-256 hash."""
         with self._get_connection() as conn:
             cursor = conn.execute(
@@ -106,7 +106,7 @@ class MetadataDB:
                 return None
             return self._row_to_response(row)
 
-    def list_documents(self) -> List[DocumentResponse]:
+    def list_documents(self) -> list[DocumentResponse]:
         """List all documents ordered by creation time descending."""
         with self._get_connection() as conn:
             cursor = conn.execute("SELECT * FROM documents ORDER BY created_at DESC")
@@ -117,13 +117,13 @@ class MetadataDB:
         self,
         doc_id: str,
         status: DocumentStatus,
-        chunk_count: Optional[int] = None,
-        error_message: Optional[str] = None,
-    ) -> Optional[DocumentResponse]:
+        chunk_count: int | None = None,
+        error_message: str | None = None,
+    ) -> DocumentResponse | None:
         """Update processing status, chunk count, or error message of a document."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         updates = ["status = ?", "updated_at = ?"]
-        params: List[Any] = [status.value, now]
+        params: list[Any] = [status.value, now]
 
         if chunk_count is not None:
             updates.append("chunk_count = ?")
@@ -151,7 +151,7 @@ class MetadataDB:
             conn.commit()
             return cursor.rowcount > 0
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Return aggregate statistics across indexed documents."""
         with self._get_connection() as conn:
             total_docs = conn.execute("SELECT COUNT(*) FROM documents").fetchone()[0]

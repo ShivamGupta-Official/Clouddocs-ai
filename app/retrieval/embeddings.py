@@ -7,7 +7,7 @@ and single embedding for search queries.
 """
 
 import logging
-from typing import List
+
 from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger("clouddocs.embeddings")
@@ -21,7 +21,7 @@ class EmbeddingEngine:
         logger.info("Loading embedding model '%s' on CPU...", self.model_name)
         # Explicitly set device to 'cpu' as verified in Phase 0 environment check
         self.model = SentenceTransformer(self.model_name, device="cpu")
-        
+
         # Verify dimension dynamically using dummy inference
         dummy_vector = self.model.encode("test", convert_to_numpy=True)
         self.dimension = int(dummy_vector.shape[0])
@@ -31,7 +31,7 @@ class EmbeddingEngine:
             self.dimension,
         )
 
-    def embed_texts(self, texts: List[str], batch_size: int = 32) -> List[List[float]]:
+    def embed_texts(self, texts: list[str], batch_size: int = 32) -> list[list[float]]:
         """
         Embed a list of text strings in batches.
 
@@ -55,7 +55,7 @@ class EmbeddingEngine:
 
         return embeddings.tolist()
 
-    def embed_query(self, query: str) -> List[float]:
+    def embed_query(self, query: str) -> list[float]:
         """
         Embed a single search query.
 

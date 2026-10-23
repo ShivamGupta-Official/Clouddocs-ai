@@ -10,7 +10,7 @@ Provides persistent vector storage and similarity retrieval using ChromaDB:
 
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 import chromadb
 from chromadb.config import Settings as ChromaSettings
@@ -47,8 +47,8 @@ class VectorStore:
 
     def add_chunks(
         self,
-        chunks: List[TextChunk],
-        embeddings: List[List[float]],
+        chunks: list[TextChunk],
+        embeddings: list[list[float]],
     ) -> int:
         """
         Store text chunks and their embeddings into ChromaDB.
@@ -110,9 +110,7 @@ class VectorStore:
         count_to_delete = len(existing["ids"]) if existing and "ids" in existing else 0
 
         if count_to_delete > 0:
-            self.collection.delete(
-                where={"document_id": document_id}
-            )
+            self.collection.delete(where={"document_id": document_id})
             logger.info(
                 "Deleted %d chunks for document_id '%s' from ChromaDB",
                 count_to_delete,
@@ -123,10 +121,10 @@ class VectorStore:
 
     def search(
         self,
-        query_embedding: List[float],
+        query_embedding: list[float],
         top_k: int = 5,
-        filter_doc_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        filter_doc_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Perform cosine similarity search for candidate chunks.
 
@@ -150,7 +148,7 @@ class VectorStore:
             include=["documents", "metadatas", "distances"],
         )
 
-        retrieved: List[Dict[str, Any]] = []
+        retrieved: list[dict[str, Any]] = []
         if not results or not results["ids"] or not results["ids"][0]:
             return []
 
@@ -160,14 +158,16 @@ class VectorStore:
         distances = results["distances"][0] if results["distances"] else []
 
         for i, chunk_id in enumerate(ids):
-            retrieved.append({
-                "chunk_id": chunk_id,
-                "text": docs[i] if i < len(docs) else "",
-                "metadata": metas[i] if i < len(metas) else {},
-                # Cosine distance: 0 is identical, 2 is opposite.
-                # Cosine similarity = 1 - (distance / 2) or 1 - distance
-                "distance": distances[i] if i < len(distances) else 1.0,
-            })
+            retrieved.append(
+                {
+                    "chunk_id": chunk_id,
+                    "text": docs[i] if i < len(docs) else "",
+                    "metadata": metas[i] if i < len(metas) else {},
+                    # Cosine distance: 0 is identical, 2 is opposite.
+                    # Cosine similarity = 1 - (distance / 2) or 1 - distance
+                    "distance": distances[i] if i < len(distances) else 1.0,
+                }
+            )
 
         return retrieved
 

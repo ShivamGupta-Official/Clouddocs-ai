@@ -35,7 +35,9 @@ async def health_check() -> dict:
 
     # Check if the ChromaDB directory exists and has data
     chroma_path = Path(settings.chroma_dir_path)
-    chroma_exists = chroma_path.exists() and any(chroma_path.iterdir()) if chroma_path.exists() else False
+    chroma_exists = (
+        chroma_path.exists() and any(chroma_path.iterdir()) if chroma_path.exists() else False
+    )
 
     return {
         "status": "healthy",

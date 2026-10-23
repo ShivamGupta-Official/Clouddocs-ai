@@ -10,17 +10,17 @@ Verifies:
 """
 
 import io
-import pytest
+
 from fastapi.testclient import TestClient
 
 from app.config import get_settings
-from app.generation.llm import BaseLLMProvider, NoLLMProvider
-from app.generation.prompt import build_grounded_prompt, SYSTEM_INSTRUCTION
+from app.generation.llm import BaseLLMProvider
+from app.generation.prompt import build_grounded_prompt
 from app.main import app
 from app.retrieval.embeddings import EmbeddingEngine
 from app.retrieval.retriever import DocumentRetriever, RetrievedChunk
 from app.retrieval.vector_store import VectorStore
-from app.services.rag_service import RAGService, INSUFFICIENT_EVIDENCE_MESSAGE
+from app.services.rag_service import INSUFFICIENT_EVIDENCE_MESSAGE, RAGService
 
 client = TestClient(app)
 
@@ -92,6 +92,7 @@ def test_rag_service_insufficient_evidence_below_threshold(tmp_path):
     vs = VectorStore(tmp_path / "threshold_chroma")
 
     from app.ingestion.chunker import TextChunk
+
     chunk = TextChunk(
         chunk_id="c1",
         document_id="d1",
@@ -122,6 +123,7 @@ def test_rag_service_grounded_answer_and_citations(tmp_path):
     vs = VectorStore(tmp_path / "grounded_chroma")
 
     from app.ingestion.chunker import TextChunk
+
     chunk = TextChunk(
         chunk_id="aws_c1",
         document_id="aws_doc",
@@ -135,7 +137,9 @@ def test_rag_service_grounded_answer_and_citations(tmp_path):
     vs.add_chunks([chunk], engine.embed_texts([chunk.text]))
 
     retriever = DocumentRetriever(engine, vs, default_threshold=0.3)
-    mock_llm = MockLLMProvider("Amazon EC2 offers three pricing options: On-Demand, Reserved, and Spot [Source 1].")
+    mock_llm = MockLLMProvider(
+        "Amazon EC2 offers three pricing options: On-Demand, Reserved, and Spot [Source 1]."
+    )
     service = RAGService(retriever=retriever, llm_provider=mock_llm, settings=settings)
 
     response = service.answer_question("What pricing options does EC2 have?")
@@ -160,7 +164,9 @@ def test_chat_endpoint_empty_question():
 
 def test_chat_endpoint_no_evidence_query():
     """POST /chat when no matching documents exist should return 200 with honest refusal."""
-    response = client.post("/chat", json={"question": "What is the airspeed velocity of an unladen swallow?"})
+    response = client.post(
+        "/chat", json={"question": "What is the airspeed velocity of an unladen swallow?"}
+    )
     assert response.status_code == 200
     data = response.json()
     assert "question" in data
@@ -182,7 +188,9 @@ def test_chat_endpoint_end_to_end_with_uploaded_doc():
 
     try:
         # 2. Ask question
-        chat_resp = client.post("/chat", json={"question": "What is the smallest deployable unit in Kubernetes?"})
+        chat_resp = client.post(
+            "/chat", json={"question": "What is the smallest deployable unit in Kubernetes?"}
+        )
         assert chat_resp.status_code == 200
         chat_data = chat_resp.json()
 

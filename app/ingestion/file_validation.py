@@ -13,11 +13,11 @@ import hashlib
 import os
 import re
 from pathlib import Path
-from typing import Tuple
 
 
 class FileValidationError(ValueError):
     """Raised when an uploaded file fails validation checks."""
+
     pass
 
 
@@ -28,7 +28,7 @@ PDF_MAGIC_BYTES = b"%PDF-"
 def sanitize_filename(filename: str) -> str:
     """
     Sanitize filename to prevent path traversal and security issues.
-    
+
     Removes path separators, null bytes, leading dots, and unsafe characters.
     Ensures safe storage on the local filesystem.
     """
@@ -41,11 +41,11 @@ def sanitize_filename(filename: str) -> str:
 
     # Replace null bytes and dangerous chars
     clean_name = clean_name.replace("\x00", "")
-    
+
     # Remove characters that are problematic across operating systems
     # Allow alphanumeric, spaces, hyphens, underscores, dots
-    clean_name = re.sub(r'[^a-zA-Z0-9_\-. ]', '_', clean_name)
-    clean_name = clean_name.strip('. ')
+    clean_name = re.sub(r"[^a-zA-Z0-9_\-. ]", "_", clean_name)
+    clean_name = clean_name.strip(". ")
 
     if not clean_name:
         raise FileValidationError("Invalid filename after sanitization.")
@@ -57,7 +57,7 @@ def validate_file(
     filename: str,
     content: bytes,
     max_size_bytes: int,
-) -> Tuple[str, str, str]:
+) -> tuple[str, str, str]:
     """
     Validate file content, size, and type.
 
@@ -111,7 +111,9 @@ def validate_file(
                 # Fallback check for latin-1
                 content.decode("latin-1")
             except Exception as e:
-                raise FileValidationError(f"Invalid text file: unable to decode text encoding ({e}).")
+                raise FileValidationError(
+                    f"Invalid text file: unable to decode text encoding ({e})."
+                ) from e
 
         # Disallow null bytes in text files (strong indicator of binary file)
         if b"\x00" in content:

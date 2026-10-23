@@ -5,15 +5,16 @@ Reads and extracts text from plain text files (.txt) with robust encoding detect
 Returns page-level records for consistent downstream chunking and citation tracking.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
 
 class TextExtractionError(RuntimeError):
     """Raised when text cannot be extracted from a document."""
+
     pass
 
 
-def load_text_content(content_bytes: bytes) -> List[Dict[str, Any]]:
+def load_text_content(content_bytes: bytes) -> list[dict[str, Any]]:
     """
     Extract text from raw text file bytes.
 
@@ -46,8 +47,6 @@ def load_text_content(content_bytes: bytes) -> List[Dict[str, Any]]:
 
     cleaned_text = text.strip()
     if not cleaned_text:
-        raise TextExtractionError(
-            "Text file contains only whitespace or no readable characters."
-        )
+        raise TextExtractionError("Text file contains only whitespace or no readable characters.")
 
     return [{"page_number": 1, "text": cleaned_text}]

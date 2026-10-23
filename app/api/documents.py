@@ -9,11 +9,10 @@ Provides endpoints for:
 """
 
 import logging
-from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
-from app.config import get_settings, Settings
+from app.config import Settings, get_settings
 from app.database.metadata import MetadataDB
 from app.ingestion.file_validation import FileValidationError
 from app.ingestion.pdf_loader import PDFExtractionError
@@ -21,9 +20,9 @@ from app.ingestion.text_loader import TextExtractionError
 from app.retrieval.embeddings import EmbeddingEngine
 from app.retrieval.vector_store import VectorStore
 from app.schemas.documents import (
-    DocumentResponse,
-    DocumentListResponse,
     DeleteDocumentResponse,
+    DocumentListResponse,
+    DocumentResponse,
 )
 from app.services.document_service import DocumentService
 
@@ -32,9 +31,9 @@ logger = logging.getLogger("clouddocs.api.documents")
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
 # Global singletons for services, initialized once
-_metadata_db: Optional[MetadataDB] = None
-_vector_store: Optional[VectorStore] = None
-_embedding_engine: Optional[EmbeddingEngine] = None
+_metadata_db: MetadataDB | None = None
+_vector_store: VectorStore | None = None
+_embedding_engine: EmbeddingEngine | None = None
 
 
 def get_metadata_db(settings: Settings = Depends(get_settings)) -> MetadataDB:
@@ -103,13 +102,13 @@ async def upload_document(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
     except Exception as e:
         logger.error("Failed to process document upload: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while processing the document: {e}",
-        )
+        ) from e
 
 
 @router.get(

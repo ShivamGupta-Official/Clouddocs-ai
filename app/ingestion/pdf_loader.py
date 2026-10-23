@@ -8,16 +8,18 @@ Preserves page-level metadata for citations and handles edge cases:
 - Corrupted documents
 """
 
-from typing import List, Dict, Any
+from typing import Any
+
 import pymupdf
 
 
 class PDFExtractionError(RuntimeError):
     """Raised when PDF extraction fails or document contains no extractable text."""
+
     pass
 
 
-def load_pdf_content(content_bytes: bytes) -> List[Dict[str, Any]]:
+def load_pdf_content(content_bytes: bytes) -> list[dict[str, Any]]:
     """
     Extract text page-by-page from raw PDF bytes.
 
@@ -48,7 +50,7 @@ def load_pdf_content(content_bytes: bytes) -> List[Dict[str, Any]]:
         if doc.page_count == 0:
             raise PDFExtractionError("PDF contains 0 pages.")
 
-        pages_data: List[Dict[str, Any]] = []
+        pages_data: list[dict[str, Any]] = []
         total_text_chars = 0
 
         for page_idx in range(doc.page_count):
@@ -58,10 +60,12 @@ def load_pdf_content(content_bytes: bytes) -> List[Dict[str, Any]]:
 
             if page_text:
                 total_text_chars += len(page_text)
-                pages_data.append({
-                    "page_number": page_num,
-                    "text": page_text,
-                })
+                pages_data.append(
+                    {
+                        "page_number": page_num,
+                        "text": page_text,
+                    }
+                )
 
         # Check for scanned / image-only PDF
         if total_text_chars == 0 or len(pages_data) == 0:

@@ -5,7 +5,8 @@ Handles HTTP communication between the Streamlit UI and the FastAPI backend.
 Translates network errors into user-friendly diagnostic messages.
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Any
+
 import requests
 
 
@@ -15,7 +16,7 @@ class CloudDocsAPIClient:
     def __init__(self, base_url: str = "http://127.0.0.1:8000"):
         self.base_url = base_url.rstrip("/")
 
-    def get_health(self) -> Dict[str, Any]:
+    def get_health(self) -> dict[str, Any]:
         """Check backend health and component readiness."""
         try:
             resp = requests.get(f"{self.base_url}/health", timeout=5)
@@ -33,7 +34,7 @@ class CloudDocsAPIClient:
         except Exception as e:
             return {"success": False, "error": f"Health check failed: {e}"}
 
-    def list_documents(self) -> Dict[str, Any]:
+    def list_documents(self) -> dict[str, Any]:
         """Fetch all documents and processing statuses."""
         try:
             resp = requests.get(f"{self.base_url}/documents", timeout=10)
@@ -46,21 +47,25 @@ class CloudDocsAPIClient:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def upload_document(self, filename: str, content: bytes) -> Dict[str, Any]:
+    def upload_document(self, filename: str, content: bytes) -> dict[str, Any]:
         """Upload a PDF or TXT document for extraction, chunking, and indexing."""
         try:
             files = {"file": (filename, content)}
             resp = requests.post(f"{self.base_url}/documents", files=files, timeout=60)
             if resp.status_code in (200, 201):
                 return {"success": True, "data": resp.json()}
-            error_detail = resp.json().get("detail", resp.text) if resp.headers.get("content-type") == "application/json" else resp.text
+            error_detail = (
+                resp.json().get("detail", resp.text)
+                if resp.headers.get("content-type") == "application/json"
+                else resp.text
+            )
             return {"success": False, "error": error_detail}
         except requests.exceptions.Timeout:
             return {"success": False, "error": "Upload timed out while processing embeddings."}
         except Exception as e:
             return {"success": False, "error": f"Upload failed: {e}"}
 
-    def delete_document(self, document_id: str) -> Dict[str, Any]:
+    def delete_document(self, document_id: str) -> dict[str, Any]:
         """Delete a document and purge its vectors."""
         try:
             resp = requests.delete(f"{self.base_url}/documents/{document_id}", timeout=10)
@@ -73,13 +78,13 @@ class CloudDocsAPIClient:
     def ask_question(
         self,
         question: str,
-        top_k: Optional[int] = None,
-        threshold: Optional[float] = None,
-        filter_doc_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        top_k: int | None = None,
+        threshold: float | None = None,
+        filter_doc_id: str | None = None,
+    ) -> dict[str, Any]:
         """Submit question to the RAG pipeline."""
         try:
-            payload: Dict[str, Any] = {"question": question}
+            payload: dict[str, Any] = {"question": question}
             if top_k is not None:
                 payload["top_k"] = top_k
             if threshold is not None:

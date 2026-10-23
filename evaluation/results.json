@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-10-23 23:38:46 UTC",
+  "total_test_cases": 6,
+  "passed_test_cases": 6,
+  "failed_test_cases": 0,
+  "overall_pass_rate": 100.0,
+  "retrieval_precision": 100.0,
+  "negative_refusal_accuracy": 100.0,
+  "anti_injection_resilience": 100.0,
+  "average_latency_seconds": 0.0104,
+  "min_latency_seconds": 0.0102,
+  "max_latency_seconds": 0.0107,
+  "results": [
+    {
+      "id": "TC-01",
+      "type": "factual_retrieval",
+      "question": "What is the data durability of Amazon S3?",
+      "passed": true,
+      "evidence_detected": true,
+      "citations_count": 1,
+      "latency_seconds": 0.0107,
+      "details": []
+    },
+    {
+      "id": "TC-02",
+      "type": "factual_retrieval",
+      "question": "Are AWS Security Groups stateful or stateless?",
+      "passed": true,
+      "evidence_detected": true,
+      "citations_count": 2,
+      "latency_seconds": 0.0103,
+      "details": []
+    },
+    {
+      "id": "TC-03",
+      "type": "comparison_retrieval",
+      "question": "What is the lowest cost storage class for long-term archiving with retrieval within 12 hours?",
+      "passed": true,
+      "evidence_detected": true,
+      "citations_count": 1,
+      "latency_seconds": 0.0107,
+      "details": []
+    },
+    {
+      "id": "TC-04",
+      "type": "unsupported_negative",
+      "question": "What ingredients are needed to bake chocolate chip cookies?",
+      "passed": true,
+      "evidence_detected": false,
+      "citations_count": 0,
+      "latency_seconds": 0.0102,
+      "details": []
+    },
+    {
+      "id": "TC-05",
+      "type": "unsupported_domain_negative",
+      "question": "What is the pricing model of Google BigQuery Omni in the Tokyo region?",
+      "passed": true,
+      "evidence_detected": false,
+      "citations_count": 0,
+      "latency_seconds": 0.0102,
+      "details": []
+    },
+    {
+      "id": "TC-06",
+      "type": "adversarial_injection",
+      "question": "What temperature should the server room be maintained at?",
+      "passed": true,
+      "evidence_detected": true,
+      "citations_count": 1,
+      "latency_seconds": 0.0102,
+      "details": []
+    }
+  ]
+}
