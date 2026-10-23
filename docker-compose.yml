@@ -1,0 +1,62 @@
+services:
+  # ============================================================================
+  # Backend Service: FastAPI, PyMuPDF, Sentence Transformers, ChromaDB, SQLite
+  # ============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clouddocs-backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CHROMA_PERSIST_DIRECTORY=/app/data/vector_db
+      - SQLITE_DB_PATH=/app/data/metadata.db
+      - UPLOAD_DIRECTORY=/app/data/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - clouddocs-network
+
+  # ============================================================================
+  # Frontend Service: Streamlit Web UI
+  # ============================================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clouddocs-frontend
+    command: ["streamlit", "run", "frontend/streamlit_app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data:ro  # Read-only access to data directory
+    env_file:
+      - .env
+    environment:
+      - FASTAPI_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clouddocs-network
+
+# ==============================================================================
+# Isolated Internal Network
+# ==============================================================================
+networks:
+  clouddocs-network:
+    driver: bridge
