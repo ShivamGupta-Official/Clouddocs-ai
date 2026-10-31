@@ -9,9 +9,29 @@ A professional, minimal, document-focused UI:
 """
 
 import os
+import sys
 
+# Ensure project root is in sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import numpy as np
 import streamlit as st
 from api_client import CloudDocsAPIClient
+from vector_viz import generate_3d_vector_space_figure
+
+from app.config import get_settings
+from app.retrieval.embeddings import EmbeddingEngine
+from app.retrieval.vector_store import VectorStore
+
+
+@st.cache_resource
+def get_viz_engine():
+    """Cache embedding engine and ChromaDB vector store for instant 3D projection."""
+    settings = get_settings()
+    vs = VectorStore(settings.chroma_dir_path)
+    engine = EmbeddingEngine(settings.embedding_model)
+    return vs, engine
+
 
 # Page configuration
 st.set_page_config(
@@ -228,7 +248,7 @@ with st.sidebar:
 
     st.markdown("---")
 
-    page_options = ["Dashboard", "Documents", "AI Chat", "Settings & Status"]
+    page_options = ["Dashboard", "Documents", "AI Chat", "3D Vector Space", "Settings & Status"]
     current_idx = (
         page_options.index(st.session_state.current_page)
         if st.session_state.current_page in page_options
@@ -463,6 +483,30 @@ elif st.session_state.current_page == "AI Chat":
                                 unsafe_allow_html=True,
                             )
 
+                    with st.expander("🌐 Live 3D Vector Space & Similarity Radar", expanded=False):
+                        try:
+                            vs, engine = get_viz_engine()
+                            v_data = vs.collection.get(
+                                include=["embeddings", "documents", "metadatas"]
+                            )
+                            q_emb = engine.embed_query(prompt)
+                            retrieved_ids = [
+                                c.get("chunk_id") for c in citations if c.get("chunk_id")
+                            ]
+                            fig_chat_3d = generate_3d_vector_space_figure(
+                                chunks_data=v_data,
+                                query_text=prompt,
+                                query_embedding=q_emb,
+                                retrieved_chunk_ids=retrieved_ids,
+                            )
+                            if fig_chat_3d:
+                                st.plotly_chart(fig_chat_3d, use_container_width=True)
+                                st.caption(
+                                    "💡 Rotate with mouse, scroll to zoom, and hover over 3D coordinates to explore semantic proximity."
+                                )
+                        except Exception as e:
+                            st.warning(f"Could not load 3D projection: {e}")
+
                 if not has_evidence:
                     st.warning(
                         "⚠️ Insufficient evidence in uploaded documents to verify this answer."
@@ -493,6 +537,94 @@ elif st.session_state.current_page == "AI Chat":
     if st.session_state.messages and st.button("Clear Conversation", type="secondary"):
         st.session_state.messages = []
         st.rerun()
+
+
+# ==============================================================================
+# SCREEN 4: 3D VECTOR SPACE & SEMANTIC RADAR
+# ==============================================================================
+elif st.session_state.current_page == "3D Vector Space":
+    st.title("🌐 3D Vector Space & Semantic Radar")
+    st.markdown(
+        "Interactive 3D geometric visualization of high-dimensional document embeddings. "
+        "See how 384-dimensional semantic vectors are reduced using Principal Component Analysis (PCA) "
+        "and how search queries locate nearest neighbors in geometric space."
+    )
+
+    try:
+        vs, engine = get_viz_engine()
+        v_data = vs.collection.get(include=["embeddings", "documents", "metadatas"])
+        chunks_count = len(v_data.get("ids", []))
+
+        if chunks_count == 0:
+            st.info(
+                "No document vectors indexed yet. Upload a PDF or TXT file in Document Library to explore the 3D vector space."
+            )
+        else:
+            col_search, col_stats = st.columns([3, 1])
+            with col_search:
+                test_query = st.text_input(
+                    "🔍 Enter a question or concept to project into 3D space:",
+                    value=st.session_state.get(
+                        "last_query", "cyber threats in unidirectional traffic"
+                    ),
+                    placeholder="e.g. passive monitoring, problem statement, zero-return...",
+                )
+            with col_stats:
+                top_k_viz = st.slider(
+                    "Nearest Neighbors (K)",
+                    min_value=1,
+                    max_value=min(10, chunks_count),
+                    value=min(4, chunks_count),
+                )
+
+            query_emb = None
+            retrieved_ids = []
+
+            if test_query and test_query.strip():
+                st.session_state.last_query = test_query.strip()
+                with st.spinner("Projecting query into 3D vector space..."):
+                    query_emb = engine.embed_query(test_query.strip())
+                    search_res = vs.search(query_emb, top_k=top_k_viz)
+                    retrieved_ids = [r["chunk_id"] for r in search_res]
+
+            fig_3d = generate_3d_vector_space_figure(
+                chunks_data=v_data,
+                query_text=test_query.strip() if test_query else None,
+                query_embedding=query_emb,
+                retrieved_chunk_ids=retrieved_ids,
+            )
+
+            if fig_3d:
+                st.plotly_chart(fig_3d, use_container_width=True)
+                st.caption(
+                    "🖱️ **3D Controls:** Left-click + drag to rotate • Right-click + drag to pan • "
+                    "Scroll to zoom in/out • Hover over any node to inspect text and slide numbers."
+                )
+
+            # Educational breakdown & raw vector inspector
+            st.markdown("---")
+            col_e1, col_e2 = st.columns(2)
+            with col_e1:
+                st.subheader("💡 How Vector Similarity Works")
+                st.markdown(
+                    """
+                    1. **Dense Embeddings**: Each text chunk is converted into a 384-dimensional vector where semantically related concepts point in nearly identical geometric directions.
+                    2. **Cosine Similarity**: Distance between question and document vectors is calculated geometrically:
+                       $$\\text{Cosine Similarity} = \\frac{\\mathbf{A} \\cdot \\mathbf{B}}{\\|\\mathbf{A}\\| \\|\\mathbf{B}\\|}$$
+                    3. **PCA Dimensionality Reduction**: Projects the 384-D coordinates into 3 principal orthogonal axes ($X, Y, Z$) preserving maximal semantic variance.
+                    """
+                )
+            with col_e2:
+                st.subheader("🔬 Raw 384-D Vector Inspector")
+                if query_emb is not None:
+                    st.write(f"**Query Vector Dimension:** `{len(query_emb)} floats`")
+                    st.write(f"**First 8 Dimensions:** `{np.round(query_emb[:8], 4).tolist()}`")
+                    st.write(f"**Vector L2 Norm:** `{np.linalg.norm(query_emb):.4f}`")
+                st.write(f"**Indexed Document Vectors:** `{chunks_count}`")
+                st.write("**Embedding Model:** `sentence-transformers/all-MiniLM-L6-v2`")
+
+    except Exception as e:
+        st.error(f"Error initializing 3D visualization: {e}")
 
 
 # ==============================================================================
