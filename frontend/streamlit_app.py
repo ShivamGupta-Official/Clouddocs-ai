@@ -21,68 +21,189 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom minimal CSS styling
+# Custom high-contrast CSS styling
 st.markdown(
     """
     <style>
-    /* Clean, professional styling */
+    /* Clean, high-contrast application styling */
     .stApp {
-        background-color: #fafafa;
-        color: #1f2937;
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Header typography */
-    h1, h2, h3 {
-        color: #111827;
-        font-weight: 600;
+    /* Headings and titles */
+    h1, h2, h3, h4, h5, h6 {
+        color: #0f172a !important;
+        font-weight: 700 !important;
         letter-spacing: -0.02em;
     }
 
-    /* Metric cards */
+    p, span, label, div {
+        color: #1e293b;
+    }
+
+    /* Metric cards: ensure dark bold text on white cards */
     div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 16px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 16px 20px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    div[data-testid="stMetricLabel"] p,
+    div[data-testid="stMetricLabel"] label,
+    div[data-testid="stMetricLabel"] div {
+        color: #475569 !important;
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
+    }
+
+    div[data-testid="stMetricValue"] div,
+    div[data-testid="stMetricValue"] {
+        color: #0f172a !important;
+        font-size: 1.9rem !important;
+        font-weight: 800 !important;
+    }
+
+    /* Action buttons: high contrast */
+    div.stButton > button {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        padding: 10px 16px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+
+    div.stButton > button:hover {
+        background-color: #f1f5f9 !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+    }
+
+    button[kind="primary"],
+    div.stButton > button[kind="primary"] {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        border: 1px solid #1d4ed8 !important;
+        font-weight: 600 !important;
+    }
+
+    button[kind="primary"]:hover,
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #1d4ed8 !important;
+        color: #ffffff !important;
     }
 
     /* Citation box */
     .citation-box {
-        background-color: #f8fafc;
-        border-left: 4px solid #2563eb;
-        padding: 12px 16px;
-        margin-top: 8px;
-        margin-bottom: 8px;
-        border-radius: 4px;
-        font-size: 0.9em;
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-left: 4px solid #2563eb !important;
+        padding: 14px 18px !important;
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+        border-radius: 6px !important;
+        font-size: 0.92rem !important;
+        color: #0f172a !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .citation-box b {
+        color: #1d4ed8 !important;
+        font-weight: 600 !important;
+    }
+
+    .citation-box i {
+        color: #64748b !important;
+    }
+
+    .citation-box p {
+        color: #334155 !important;
+        margin-top: 6px !important;
+    }
+
+    /* Chat messages */
+    div[data-testid="stChatMessage"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        padding: 14px 18px !important;
+        color: #0f172a !important;
+        margin-bottom: 12px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    div[data-testid="stChatMessage"] p,
+    div[data-testid="stChatMessage"] span,
+    div[data-testid="stChatMessage"] div {
+        color: #0f172a !important;
     }
 
     /* Status badges */
     .status-completed {
-        background-color: #dcfce7;
-        color: #15803d;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-weight: 500;
-        font-size: 0.85em;
+        background-color: #dcfce7 !important;
+        color: #15803d !important;
+        padding: 4px 10px !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        font-size: 0.85em !important;
+        display: inline-block !important;
     }
+
     .status-failed {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-weight: 500;
-        font-size: 0.85em;
+        background-color: #fee2e2 !important;
+        color: #b91c1c !important;
+        padding: 4px 10px !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        font-size: 0.85em !important;
+        display: inline-block !important;
     }
+
     .status-processing {
-        background-color: #fef3c7;
-        color: #b45309;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-weight: 500;
-        font-size: 0.85em;
+        background-color: #fef3c7 !important;
+        color: #b45309 !important;
+        padding: 4px 10px !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        font-size: 0.85em !important;
+        display: inline-block !important;
+    }
+
+    /* Expanders & Accordions */
+    div[data-testid="stExpander"] {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+    }
+    div[data-testid="stExpander"] details summary span {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+
+    /* Sidebar high contrast */
+    section[data-testid="stSidebar"] {
+        background-color: #0f172a !important;
+    }
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] p {
+        color: #f8fafc !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label {
+        color: #f8fafc !important;
+    }
+    section[data-testid="stSidebar"] hr {
+        border-color: #334155 !important;
     }
     </style>
     """,
