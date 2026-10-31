@@ -273,7 +273,7 @@ elif st.session_state.current_page == "AI Chat":
             top_k = st.slider("Max Passages (Top-K)", min_value=1, max_value=10, value=4)
         with col2:
             threshold = st.slider(
-                "Relevance Threshold", min_value=0.0, max_value=1.0, value=0.3, step=0.05
+                "Relevance Threshold", min_value=0.0, max_value=1.0, value=0.15, step=0.05
             )
 
     # Render conversation history

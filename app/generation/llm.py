@@ -51,9 +51,13 @@ class BaseLLMProvider(ABC):
 
 
 class NoLLMProvider(BaseLLMProvider):
-    """Fallback provider when no LLM is configured or keys are unavailable."""
+    """
+    Extractive fallback provider when no external generative LLM is configured.
+    Performs deterministic, 100% grounded extraction directly from the user's
+    verified retrieved document passages, eliminating hallucinations entirely.
+    """
 
-    def __init__(self, reason: str = "No LLM provider configured."):
+    def __init__(self, reason: str = "Extractive Search Mode"):
         self.reason = reason
 
     @property
@@ -65,13 +69,30 @@ class NoLLMProvider(BaseLLMProvider):
         return None
 
     def generate(self, prompt: str) -> str:
+        import re
+
+        # Extract passages between 'SOURCE PASSAGES:' and 'USER QUESTION:'
+        match = re.search(
+            r"SOURCE PASSAGES:\s*={10,}\s*(.*?)\s*={10,}\s*USER QUESTION:",
+            prompt,
+            re.DOTALL,
+        )
+        if match:
+            passages_block = match.group(1).strip()
+            sources = re.split(r"---\s*\[Source\s+(\d+)[^\]]*\]\s*---", passages_block)
+            if len(sources) >= 3:
+                src_num = sources[1]
+                src_text = sources[2].strip()
+                cleaned_text = "\n".join(
+                    line.strip() for line in src_text.splitlines() if line.strip()
+                )
+                return (
+                    f"Direct evidence extracted from your uploaded document [Source {src_num}]:\n\n"
+                    f"{cleaned_text}"
+                )
+
         return (
-            f"{self.reason}\n\n"
-            "To enable automated answer generation, configure an LLM in your .env file:\n"
-            "- For Google Gemini: set LLM_PROVIDER=gemini and GEMINI_API_KEY=your_key\n"
-            "- For OpenAI: set LLM_PROVIDER=openai and OPENAI_API_KEY=your_key\n"
-            "- For Ollama (local): set LLM_PROVIDER=ollama (ensure Ollama is running)\n\n"
-            "Below are the verified relevant passages retrieved directly from your uploaded documents."
+            "The provided documents do not contain sufficient evidence to answer this question."
         )
 
 

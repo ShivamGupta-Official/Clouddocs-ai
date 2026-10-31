@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     chunk_size: int = 800
     chunk_overlap: int = 120
     retrieval_top_k: int = 5
-    relevance_threshold: float = 0.3
+    relevance_threshold: float = 0.15
 
     # --- Server ---
     api_host: str = "0.0.0.0"
