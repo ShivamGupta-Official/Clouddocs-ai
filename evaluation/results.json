@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-31 10:36:47 UTC",
+  "timestamp": "2026-10-31 11:00:37 UTC",
   "total_test_cases": 6,
   "passed_test_cases": 6,
   "failed_test_cases": 0,
@@ -7,9 +7,9 @@
   "retrieval_precision": 100.0,
   "negative_refusal_accuracy": 100.0,
   "anti_injection_resilience": 100.0,
-  "average_latency_seconds": 0.0097,
-  "min_latency_seconds": 0.0082,
-  "max_latency_seconds": 0.0111,
+  "average_latency_seconds": 0.0199,
+  "min_latency_seconds": 0.0139,
+  "max_latency_seconds": 0.0337,
   "results": [
     {
       "id": "TC-01",
@@ -18,7 +18,7 @@
       "passed": true,
       "evidence_detected": true,
       "citations_count": 1,
-      "latency_seconds": 0.0109,
+      "latency_seconds": 0.0171,
       "details": []
     },
     {
@@ -28,7 +28,7 @@
       "passed": true,
       "evidence_detected": true,
       "citations_count": 2,
-      "latency_seconds": 0.0082,
+      "latency_seconds": 0.0221,
       "details": []
     },
     {
@@ -38,7 +38,7 @@
       "passed": true,
       "evidence_detected": true,
       "citations_count": 1,
-      "latency_seconds": 0.0103,
+      "latency_seconds": 0.0174,
       "details": []
     },
     {
@@ -48,7 +48,7 @@
       "passed": true,
       "evidence_detected": false,
       "citations_count": 0,
-      "latency_seconds": 0.0111,
+      "latency_seconds": 0.0337,
       "details": []
     },
     {
@@ -58,7 +58,7 @@
       "passed": true,
       "evidence_detected": false,
       "citations_count": 0,
-      "latency_seconds": 0.0085,
+      "latency_seconds": 0.0139,
       "details": []
     },
     {
@@ -68,7 +68,7 @@
       "passed": true,
       "evidence_detected": true,
       "citations_count": 1,
-      "latency_seconds": 0.0094,
+      "latency_seconds": 0.0152,
       "details": []
     }
   ]
